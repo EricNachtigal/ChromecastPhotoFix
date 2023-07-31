@@ -4,17 +4,21 @@ from tkinter import Tk
 from tkinter.filedialog import askdirectory
 import os
 
-path = askdirectory(title='Select Folder') # shows dialog box and return the path
+# Asks for the target directory and iterates
+path = askdirectory(title='Select Image Folder') # shows dialog box and return the path
+savepath = askdirectory(title='Select Resize Save Directory')
 for x in os.listdir(path):
     if x.endswith(".jpg"):
-        # Prints only JPEG files present in selected directory
-        print(path+x)
-        imscale = Image.open(os.path.join(path, x))
 
-        # Rescales the original image for the center print
-        imscale = Image.open(os.path.join(path, x))
+        # Opens the target image and checks size/aspect ratio
+        imscale = Image.open(os.path.join(path, x)) # String interpretation issues caused path+x to fail (double '\\' escape char) 
         width, height = imscale.size
         print("Original", imscale.size)
+        CCRatio = 1920/1080
+        ImageRatio = imscale.size[0]/imscale.size[1]
+        print("Current", ImageRatio)
+        
+        # Rescales the original image for the center print
         scale = 1920, 1080
         imscale.thumbnail(scale, Image.Resampling.LANCZOS)
         width, height = imscale.size
@@ -39,10 +43,16 @@ for x in os.listdir(path):
         shift = int((1920-RescaleWidth)/2), 0
         print("Shift", shift)
         gaussImage.paste(imscale, shift)
-        gaussImage.show()
-        imscale.close()
-        imcrop.close()
+        #gaussImage.show()
+        
+        # Saves Image
+        savename = x.replace(".jpg", "_CCResize.jpg")
+        gaussImage.save(os.path.join(savepath, savename))
+
+        # Closes open image objects
         gaussImage.close
+        imcrop.close()
+        imscale.close()
         
 # Sources Image Manipulation
 # https://pillow.readthedocs.io/en/stable/handbook/tutorial.html#using-the-image-class
@@ -56,6 +66,7 @@ for x in os.listdir(path):
 
 # Select images and directories.
 # https://stackoverflow.com/questions/50860640/ask-a-user-to-select-folder-to-read-the-files-in-python
-# 
-#
-#
+# https://stackoverflow.com/questions/24678604/how-can-i-use-a-variable-instead-of-a-path-to-open-an-image-file-using-pil-in-py
+
+# Save images
+# https://www.geeksforgeeks.org/python-pil-image-save-method/
