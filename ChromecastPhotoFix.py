@@ -7,6 +7,8 @@ import os
 # Asks for the target directory and iterates
 path = askdirectory(title='Select Image Folder') # shows dialog box and return the path
 savepath = askdirectory(title='Select Resize Save Directory')
+rejectpath = askdirectory(title='Where would you like to save incompatible pictures?') #stopgap until panoramas can be properly handled
+
 for x in os.listdir(path):
     if x.endswith(".jpg"):
 
@@ -16,7 +18,7 @@ for x in os.listdir(path):
         #print("Original", imscale.size)
         
         # If image is greater than 1920px wide crop the image
-        if imscale.size[0]>1920:
+        if imscale.size[0]>1920 and (imscale.size[0]/imscale.size[1])>1.8:
             # Rescales the original image for the center print
             scale = 1920, 1080
             imscale.thumbnail(scale, Image.Resampling.LANCZOS)
@@ -54,13 +56,18 @@ for x in os.listdir(path):
             imcrop.close()
             imscale.close()
 
+        # Stopgap measure for panoramas.
+        elif (imscale.size[0]/imscale.size[1])>1.8:
+            print(x + " not included due to aspect ratio (panorama).")
+            imscale.save(os.path.join(rejectpath, x), format='JPEG', subsampling=0, quality=95)
+            imscale.close()
+
         # If the image is less than or equal to 1920px wide copy to the new save directory
         elif 1:
             imscale.save(os.path.join(savepath, x), format='JPEG', subsampling=0, quality=95)
             print("Copy")
             imscale.close()
-
-        
+      
 # Sources Image Manipulation
 # https://pillow.readthedocs.io/en/stable/handbook/tutorial.html#using-the-image-class
 # https://www.geeksforgeeks.org/python-pil-image-crop-method/ 
