@@ -18,7 +18,7 @@ for x in os.listdir(path):
         #print("Original", imscale.size)
         
         # If image is greater than 1920px wide crop the image
-        if imscale.size[0]>1920 and (imscale.size[0]/imscale.size[1])>1.8:
+        if imscale.size[0]>1920 and (imscale.size[0]/imscale.size[1])<1.8:
             # Rescales the original image for the center print
             scale = 1920, 1080
             imscale.thumbnail(scale, Image.Resampling.LANCZOS)
@@ -62,7 +62,8 @@ for x in os.listdir(path):
             imscale.save(os.path.join(rejectpath, x), format='JPEG', subsampling=0, quality=95)
             imscale.close()
 
-        # If the image is less than or equal to 1920px wide copy to the new save directory
+        # If the image is less than or equal to 1920px wide and not a panorama copy to the new save directory
+        # !!! Change this to an actual file copy rather than saving the open image, will help with size and compression artificats
         elif 1:
             imscale.save(os.path.join(savepath, x), format='JPEG', subsampling=0, quality=95)
             print("Copy")
