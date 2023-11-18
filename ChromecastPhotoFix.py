@@ -6,8 +6,15 @@ import os
 
 # Asks for the target directory and iterates
 path = askdirectory(title='Select Image Folder') # shows dialog box and return the path
-savepath = askdirectory(title='Select Resize Save Directory')
-rejectpath = askdirectory(title='Where would you like to save incompatible pictures?') #stopgap until panoramas can be properly handled
+savepath = path+"Resize"
+if not os.path.exists(savepath):
+    os.makedirs(savepath)
+#savepath = askdirectory(title='Select Resize Save Directory')
+rootpath = "/".join(path.split("/")[0:len(path.split("/"))-1])
+rejectpath = f"{rootpath}/RejectedPanos"
+if not os.path.exists(rejectpath):
+    os.makedirs(rejectpath)
+#rejectpath = askdirectory(title='Where would you like to save incompatible pictures?') #stopgap until panoramas can be properly handled
 
 for x in os.listdir(path):
     if x.endswith(".jpg"):
@@ -49,7 +56,7 @@ for x in os.listdir(path):
             # Saves Image
             savename = x.replace(".jpg", "_CCResize.jpg")
             gaussImage.save(os.path.join(savepath, savename), format='JPEG', subsampling=0, quality=95) #PIL default JPEG compression values lead to poor image quality
-            print("Resize")
+            print(x + " has been resized")
 
             # Closes open image objects
             gaussImage.close()
@@ -64,11 +71,11 @@ for x in os.listdir(path):
 
         # If the image is less than or equal to 1920px wide and not a panorama copy to the new save directory
         # !!! Change this to an actual file copy rather than saving the open image, will help with size and compression artificats
-        elif 1:
+        else:
             imscale.save(os.path.join(savepath, x), format='JPEG', subsampling=0, quality=95)
-            print("Copy")
+            print(x + " has been copied")
             imscale.close()
-      
+ 
 # Sources Image Manipulation
 # https://pillow.readthedocs.io/en/stable/handbook/tutorial.html#using-the-image-class
 # https://www.geeksforgeeks.org/python-pil-image-crop-method/ 
