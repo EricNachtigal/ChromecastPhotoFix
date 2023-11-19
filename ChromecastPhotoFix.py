@@ -4,25 +4,32 @@ from tkinter import Tk
 from tkinter.filedialog import askdirectory
 import os
 
+class Directory:
+    def __init__(self):
+        self.path = askdirectory(title='Select Image Folder') # shows dialog box and returns the path
+        self.savepath = f"{self.path}Resize"
+        rootpath = "/".join(self.path.split("/")[0:len(self.path.split("/"))-1])
+        self.reject_pano = f"{rootpath}/RejectedPanos"
+        self.create_directory(self.savepath)
+        self.create_directory(self.reject_pano)
+
+    def create_directory(self, filepath):
+        if not os.path.exists(filepath):
+            os.makedirs(filepath)
+
+    def return_directories(self):
+        return self.path, self.savepath, self.reject_pano
+
+
 # Asks for the target directory and iterates
-path = askdirectory(title='Select Image Folder') # shows dialog box and return the path
-savepath = path+"Resize"
-if not os.path.exists(savepath):
-    os.makedirs(savepath)
-#savepath = askdirectory(title='Select Resize Save Directory')
-rootpath = "/".join(path.split("/")[0:len(path.split("/"))-1])
-rejectpath = f"{rootpath}/RejectedPanos"
-if not os.path.exists(rejectpath):
-    os.makedirs(rejectpath)
-#rejectpath = askdirectory(title='Where would you like to save incompatible pictures?') #stopgap until panoramas can be properly handled
+dir = Directory()
+path, savepath, rejectpath = dir.return_directories()
 
 for x in os.listdir(path):
     if x.endswith(".jpg"):
-
         # Opens the target image and checks size
         imscale = Image.open(os.path.join(path, x)) # String interpretation issues caused path+x to fail (double '\\' escape char) 
         width, height = imscale.size
-        #print("Original", imscale.size)
         
         # If image is greater than 1920px wide crop the image
         if imscale.size[0]>1920 and (imscale.size[0]/imscale.size[1])<1.8:
@@ -30,9 +37,7 @@ for x in os.listdir(path):
             scale = 1920, 1080
             imscale.thumbnail(scale, Image.Resampling.LANCZOS)
             width, height = imscale.size
-            #print("Rescale", imscale.size)
             RescaleWidth = imscale.size[0]
-            # imscale.show()
 
             # Crops the original image and blurs
             imcrop = Image.open(os.path.join(path, x))
@@ -44,14 +49,11 @@ for x in os.listdir(path):
             bottom = center-540
             cropbox = (0, bottom, 1920, top)
             crop = imcrop.crop(cropbox)
-            #print("Crop", imcrop.size)
             gaussImage = crop.filter(ImageFilter.GaussianBlur(20))
 
             # Pastes the scaled image over the blured image
             shift = int((1920-RescaleWidth)/2), 0
-            #print("Shift", shift)
             gaussImage.paste(imscale, shift)
-            #gaussImage.show()
             
             # Saves Image
             savename = x.replace(".jpg", "_CCResize.jpg")
